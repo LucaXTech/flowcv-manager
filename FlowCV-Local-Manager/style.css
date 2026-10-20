@@ -80,3 +80,9 @@ body {background:radial-gradient(ellipse at 95% 0%,#eaf3f9 0,transparent 33%),va
 .login-progress{border-left:3px solid #63a2ca;padding:6px 9px;background:#f0f7fc}
 
 .cookie-steps{padding-left:19px;margin:0;color:var(--muted);font-size:11px;line-height:1.65}.cookie-steps strong{color:var(--text,#183248)}.cookie-steps code{font-size:10px;overflow-wrap:anywhere}
+
+/* v0.6.3 bilingual language selector */
+.language-picker{display:inline-flex;align-items:center;flex-shrink:0}
+.language-picker select{background:#ffffff16;border:1px solid #ffffff55;color:#f7fbff;border-radius:9px;padding:8px 22px 8px 10px;font-weight:750;letter-spacing:.035em;cursor:pointer;font-size:12px}
+.language-picker select option{color:#17354a;background:#fff}
+.language-picker select:focus-visible{outline:2px solid #96e5ff;outline-offset:2px}

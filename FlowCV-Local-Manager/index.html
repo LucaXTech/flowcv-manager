@@ -1,10 +1,10 @@
 <!doctype html>
-<html lang="it">
+<html lang="en">
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#112d47"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><title>FlowCV Manager</title><link rel="stylesheet" href="/style.css"></head>
 <body>
 <header class="topbar">
  <div class="brand"><span class="brand-mark">F<span>.</span></span><div><strong>FlowCV Manager</strong><small>Il tuo archivio professionale</small></div></div>
- <div class="top-actions"><span class="connection-pill" id="authPill"><span class="status-dot" id="authDot"></span><span id="authStatus">Verifica collegamento…</span></span><button class="btn btn-website" id="flowcvWebsite" title="Apri FlowCV nel browser predefinito per modificare il curriculum online">Apri FlowCV <span aria-hidden="true">↗</span></button></div>
+ <div class="top-actions"><label class="language-picker" for="languageSelect"><span class="sr-only">Language / Lingua</span><select id="languageSelect" aria-label="Language / Lingua"><option value="en">EN</option><option value="it">IT</option></select></label><span class="connection-pill" id="authPill"><span class="status-dot" id="authDot"></span><span id="authStatus">Verifica collegamento…</span></span><button class="btn btn-website" id="flowcvWebsite" title="Apri FlowCV nel browser predefinito per modificare il curriculum online">Apri FlowCV <span aria-hidden="true">↗</span></button></div>
 </header>
 <div class="layout">
  <aside class="sidebar" aria-label="Libreria curriculum">
@@ -65,5 +65,6 @@
 <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 <dialog id="metaDialog" class="modal"><form method="dialog" id="metaForm"><div><span class="eyebrow">ARCHIVIO CV</span><h2 id="metaTitle">Nuova versione</h2></div><label for="metaName">Nome della versione <span class="required">*</span></label><input id="metaName" maxlength="120" required placeholder="Es. Biomedical R&D — Generale"><div class="two-fields"><div><label for="metaCompany">Azienda</label><input id="metaCompany" maxlength="100" placeholder="Es. Coloplast"></div><div><label for="metaRole">Posizione</label><input id="metaRole" maxlength="100" placeholder="Es. R&D Engineer"></div></div><label for="metaNotes">Note (facoltative)</label><textarea id="metaNotes" rows="3" maxlength="1000" placeholder="Perché ho preparato questa versione…"></textarea><menu><button class="btn btn-primary" value="ok">Salva</button><button class="btn btn-quiet" value="cancel" formnovalidate>Annulla</button></menu></form></dialog>
 <dialog id="confirmDialog" class="modal"><form method="dialog"><div class="confirm-icon" id="confirmIcon">↥</div><h2 id="confirmTitle">Conferma</h2><p id="confirmText" class="muted"></p><div id="confirmDetails" class="confirm-details" hidden></div><menu><button class="btn btn-outline" value="cancel" formnovalidate>Annulla</button><button id="confirmYes" class="btn btn-primary" value="ok">Sì, continua</button></menu></form></dialog>
+<script src="/i18n.js" defer></script>
 <script src="/app.js" defer></script>
 </body></html>

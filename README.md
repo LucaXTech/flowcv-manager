@@ -1,44 +1,64 @@
 # FlowCV Manager
 
-Local Windows CV library for [FlowCV](https://flowcv.com), with JSON imports, versioning, and one-click restore, publishing, and download through the original FlowCV PDF renderer.
+**Your resumes. Your versions. One click to the original FlowCV PDF.**
 
-Not affiliated with or endorsed by FlowCV.
+[![Tests](https://github.com/LucaXTech/flowcv-manager/actions/workflows/tests.yml/badge.svg)](https://github.com/LucaXTech/flowcv-manager/actions/workflows/tests.yml)
+[![Windows Installer](https://github.com/LucaXTech/flowcv-manager/actions/workflows/windows-installer.yml/badge.svg)](https://github.com/LucaXTech/flowcv-manager/actions/workflows/windows-installer.yml)
 
-## Install on Windows
+FlowCV Manager is a **free, local Windows desktop companion for [FlowCV](https://flowcv.com)**. Keep as many *local* resume versions as you like, organize them by employer and job title, edit and duplicate them, then restore your chosen version to FlowCV and download the **original FlowCV-generated PDF**.
 
-**Development / ZIP install:** extract the ZIP and double-click `Installa-FlowCV.cmd`. It creates a desktop shortcut and a Start Menu shortcut, without administrator privileges. Requires Node.js **22+** and Microsoft Edge or Google Chrome. `Installa-FlowCV.ps1` installs program files under `%LOCALAPPDATA%\Programs\FlowCV Manager`.
+**English and Italian UI:** Switch with the `EN / IT` control in the top bar. The app remembers your preference. Your resume data and JSON content are never translated by the language switch.
 
-**Standalone `.exe` installer (recommended):** the repository includes an Inno Setup source and a GitHub Actions workflow that bundles an official Node.js runtime with the desktop application. Download the generated `FlowCV-Manager-Setup-0.6.2.exe` artifact from **Actions → Windows Installer**. It creates Desktop and Start Menu shortcuts, installs per user (no administrator rights), stops any previous Manager process before replacing files, and **does not require separate Node.js installation**. The binary must still be built by GitHub Actions and verified on Windows; it is not included in this source ZIP.
+> **Independent, unofficial project.** Not affiliated with or endorsed by FlowCV. Uses undocumented web endpoints; changes to FlowCV can break compatibility. Your FlowCV plan's online-resume limit still applies: the application replaces the selected online resume, not the limit.
 
-Your resumes, history and encrypted session stay in `Documents\FlowCV-Local-Manager`. Updating or uninstalling the program does **not** delete your archive.
+## Features
 
-## Publishing on GitHub
+- **Unlimited local resume versions** — name, company, role, notes, search and filter.
+- **FlowCV JSON import / export** — prepare targeted resumes with ChatGPT, then import complete FlowCV-compatible files.
+- **Edit locally** — profile, sections, entries, visibility, full JSON, snapshots, recycle bin.
+- **Publish & download PDF** — one click uploads the selected resume to your **existing** FlowCV account, verifies the content, publishes the online page and downloads the authentic FlowCV PDF.
+- **No repeated prompts** — publishing is intentionally confirmation-free and **overwrites** the selected online resume. No automatic remote backup: keep a local master version.
+- **Persistent session** — FlowCV cookie stored encrypted via Windows DPAPI; reconnect when expired. The app cannot automatically read cookies from your personal Edge profile.
+- **Windows desktop app** — launcher, desktop/Start shortcuts, installer and Inno Setup packaging.
 
-1. Create an **empty** public repository named `flowcv-manager` under your own account. Do not add an auto-generated README or license; both are included here.
-2. Push this source directory (not your local CV data directory). GitHub Actions runs the cross-platform tests.
-3. Open **Actions → Windows Installer → Run workflow** to build the standalone installer executable. Download the build artifact, inspect it on Windows, and only then publish a GitHub Release.
-4. Never add session cookies, private resumes, or logs to issues, pull requests, or release archives.
+## Installation (Windows)
 
-## Login / cookie handling
+### Standalone Windows installer (recommended)
 
-Click **Apri FlowCV nel mio Edge** in **Connessione e impostazioni**. The Manager opens your ordinary Microsoft Edge profile, where Google sign-in works normally. **No remote debugging, browser automation or separate login profile is used.**
+Open [Actions → Windows Installer](https://github.com/LucaXTech/flowcv-manager/actions/workflows/windows-installer.yml), choose the latest successful run and download the `FlowCV-Manager-Windows-Installer` artifact. Extract the ZIP and run `FlowCV-Manager-Setup-0.6.3.exe`.
 
-The Manager cannot automatically extract an HTTP-only login cookie from Edge's existing browser profile. After signing in, open Edge DevTools (`F12` → Application → Cookies → `https://app.flowcv.com`), copy only the **Value** for `flowcvsidapp`, paste it in the Manager's **Sessione FlowCV** field and click **Collega account**. Your session is verified and stored encrypted with Windows DPAPI. You do not need to repeat this after every launch: only when FlowCV revokes or expires the session.
+The installer bundles Node.js, needs no separate Node installation, installs for the current user without admin rights, and creates Desktop and Start Menu shortcuts. **A successful build is not the same as a Windows field test; review the release and test the installer before trusting it for important work.** The installer is not digitally signed.
 
-If the FlowCV CLI has a current cookie already saved, use **Alternativa: importa dalla CLI** instead. Never share a session cookie in chat or on GitHub.
+### Source / ZIP installation
 
-## Working with CVs
+Download the repository ZIP and run `Installa-FlowCV.cmd` (requires **Node.js 22+** and Edge or Chrome). Program files install to `%LOCALAPPDATA%\Programs\FlowCV Manager`. Resume library and session persist in `Documents\FlowCV-Local-Manager` across app updates and uninstalls.
 
-- Import JSON produced by ChatGPT, add a name/company/position.
-- Edit or duplicate saved versions locally without altering your master version.
-- Press **Pubblica e scarica PDF** on a selected version: FlowCV's single online resume is replaced, verified, made available on the public web, and its real PDF is downloaded.
-- This operation is **intentionally confirmation-free**, as requested by the user. It overwrites the online resume and does not automatically back it up. Keep your master JSON in the local archive.
-- The Manager is served on `http://127.0.0.1:8765` and communicates with FlowCV over HTTPS.
+## Quick start
 
-## Security, scope and credits
+1. Launch **FlowCV Manager** from your desktop shortcut.
+2. Under **Connection & settings**, choose **Open FlowCV in my Edge** and sign in normally.
+3. If a valid session is not stored, copy only the `flowcvsidapp` **Value** from Edge DevTools → Application → Cookies → `https://app.flowcv.com`, paste it in the Manager and click **Connect account**. You can alternatively import a saved Flowcv-MCP CLI session.
+4. Import a FlowCV JSON resume, assign a name, employer and position, or pull the current online resume into your local library.
+5. Choose a saved version → **Publish & download PDF**. This replaces the selected online FlowCV resume, may make its public link available, and downloads the PDF.
 
-Never commit `Documents\FlowCV-Local-Manager`, `*.dpapi`, cookies, CV JSON exports, personal photos or emails. Session cookies grant account access; do not paste them in GitHub issues. Credential material is encrypted using Windows DPAPI (CurrentUser).
+The Manager serves its UI on `http://127.0.0.1:8765` (loopback only) and talks to FlowCV using HTTPS. It is not a remote multiuser service. The browser password / HTTPS indicators are unrelated to FlowCV's authenticated HTTPS endpoint.
 
-Inspired by [amirwebd3v/Flowcv-MCP](https://github.com/amirwebd3v/Flowcv-MCP); **FlowCV Manager is independently packaged and does not vendor the upstream source**. The original repository had no explicit LICENSE file when this project was reviewed. This project is not affiliated with the upstream author or with FlowCV.
 
-See `FlowCV-Local-Manager/README.md` for troubleshooting and development details.
+## Privacy & security
+
+- Your resume data and encrypted session stay on your computer. Never commit `Documents\FlowCV-Local-Manager`, cookie values, `*.dpapi`, private JSON, personal photos or debug logs.
+- A FlowCV session cookie grants access to your account; do not paste it in GitHub Issues or public chats.
+- Local writes are protected by a per-session app token; Windows DPAPI uses CurrentUser.
+- Confirm you selected the correct online resume before using the one-click replace/publish action.
+
+## Developer notes
+
+- Source: `FlowCV-Local-Manager/`; tests: `FlowCV-Local-Manager/tests/`.
+- GitHub workflows run tests on Windows and Linux and build the Inno Setup installer on Windows.
+- UI translations: `FlowCV-Local-Manager/i18n.js` (English dictionary + Italian originals). No remote translation service.
+
+## Credits & licensing
+
+Copyright © LucaXTech, **MIT** (see [`LICENSE`](LICENSE)).
+
+Inspired by [amirwebd3v/Flowcv-MCP](https://github.com/amirwebd3v/Flowcv-MCP), which is not bundled into this application. This project is **not affiliated with, supported by or endorsed by FlowCV**, or by the author of the upstream project.

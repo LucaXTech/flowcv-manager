@@ -17,6 +17,7 @@ jobs:
         run: |
           node FlowCV-Local-Manager/tests/installer-source.test.mjs
           node FlowCV-Local-Manager/tests/normal-edge-login.test.mjs
+          node FlowCV-Local-Manager/tests/i18n.test.mjs
           node FlowCV-Local-Manager/tests/smoke.cjs
           node FlowCV-Local-Manager/tests/bridge.test.mjs
           node FlowCV-Local-Manager/tests/launcher.test.mjs

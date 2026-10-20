@@ -94,6 +94,7 @@ const server=http.createServer(async(req,res)=>{
     if(origin && ![`http://127.0.0.1:${PORT}`,`http://localhost:${PORT}`].includes(origin)) throw httpError(403,'Origin non permessa');
   }
   if(method==='GET'&&u==='/') return await sendFile(res,'index.html','text/html; charset=utf-8');
+  if(method==='GET'&&u==='/i18n.js') return await sendFile(res,'i18n.js','text/javascript; charset=utf-8');
   if(method==='GET'&&u==='/app.js') return await sendFile(res,'app.js','text/javascript; charset=utf-8');
   if(method==='GET'&&u==='/style.css') return await sendFile(res,'style.css','text/css; charset=utf-8');
   if(method==='GET'&&u==='/favicon.svg') return await sendFile(res,'favicon.svg','image/svg+xml; charset=utf-8');

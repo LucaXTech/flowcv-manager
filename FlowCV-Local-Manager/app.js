@@ -1,24 +1,26 @@
 'use strict';
 const $=id=>document.getElementById(id);
+const i18n=window.FlowCVI18n;const t=i18n.t;const locale=()=>i18n.locale();
+const errText=e=>i18n.dynamicError(e?.message||String(e));
 const state={token:'',items:[],id:null,document:null,entryId:null,sectionKey:null,tab:'sections',filter:'active',query:''};
 const el=(tag,cls,text)=>{const e=document.createElement(tag);if(cls)e.className=cls;if(text!==undefined)e.textContent=String(text);return e;};
 const set=(node,...children)=>{node.replaceChildren(...children);return node;};
 const clean=text=>{const doc=new DOMParser().parseFromString(String(text??''),'text/html');return (doc.body.textContent||'').replace(/\s+/g,' ').trim();};
-const niceDate=iso=>{try{return new Date(iso).toLocaleString('it-IT')}catch{return iso}};
-async function ask(title,label,value=''){const result=window.prompt(`${title} — ${label}`,value);return result===null?null:result.trim();}
+const niceDate=iso=>{try{return new Date(iso).toLocaleString(locale())}catch{return iso}};
+async function ask(title,label,value=''){const result=window.prompt(`${t(title)} — ${t(label)}`,value);return result===null?null:result.trim();}
 let toastTimer;
-function notice(msg,error=false){const e=$('toast');e.textContent=msg;e.hidden=false;e.classList.toggle('error',error);clearTimeout(toastTimer);toastTimer=setTimeout(()=>e.hidden=true,5500);}
-async function api(url,method='GET',payload){const opts={method,headers:{}};if(method!=='GET'){opts.headers['Content-Type']='application/json';opts.headers['X-FlowCV-Manager-Token']=state.token;opts.body=JSON.stringify(payload??{});}const res=await fetch(url,opts);const obj=await res.json().catch(()=>({error:'Risposta non valida'}));if(!res.ok)throw Error(obj.error||`HTTP ${res.status}`);return obj;}
-async function guarded(fn){try{await fn()}catch(e){notice(e.message||String(e),true)}}
+function notice(msg,error=false){const e=$('toast');e.textContent=t(msg);e.hidden=false;e.classList.toggle('error',error);clearTimeout(toastTimer);toastTimer=setTimeout(()=>e.hidden=true,5500);}
+async function api(url,method='GET',payload){const opts={method,headers:{}};if(method!=='GET'){opts.headers['Content-Type']='application/json';opts.headers['X-FlowCV-Manager-Token']=state.token;opts.body=JSON.stringify(payload??{});}const res=await fetch(url,opts);const obj=await res.json().catch(()=>({error:'Risposta non valida'}));if(!res.ok)throw Error(i18n.dynamicError(obj.error)||`HTTP ${res.status}`);return obj;}
+async function guarded(fn){try{await fn()}catch(e){notice(errText(e),true)}}
 async function load(){state.items=await api('/api/cvs');renderList();if(state.id&&state.items.some(x=>x.localId===state.id))await select(state.id);else if(state.items.some(x=>!x.trashedAt&&!x.archived))await select(state.items.find(x=>!x.trashedAt&&!x.archived).localId);else if(state.items.length)await select(state.items[0].localId);else showEmpty();}
 function showEmpty(){state.id=null;state.document=null;$('empty').hidden=false;$('workspace').hidden=true;updateRemoteButtons();}
 function renderList(){
  const nav=$('cvList');nav.replaceChildren();
- const q=state.query.toLocaleLowerCase('it-IT');const active=state.items.filter(x=>!x.trashedAt&&!x.archived);
+ const q=state.query.toLocaleLowerCase(locale());const active=state.items.filter(x=>!x.trashedAt&&!x.archived);
  $('countCV').textContent=active.length;
  const filtered=state.items.filter(item=>{
   if(state.filter==='trash'?!item.trashedAt:state.filter==='archived'?!item.archived||!!item.trashedAt:!!item.trashedAt||!!item.archived)return false;
-  return [item.name,item.company,item.role,item.notes].some(v=>String(v||'').toLocaleLowerCase('it-IT').includes(q));
+  return [item.name,item.company,item.role,item.notes].some(v=>String(v||'').toLocaleLowerCase(locale()).includes(q));
  }).sort((a,b)=>String(b.updatedAt||'').localeCompare(String(a.updatedAt||'')));
  for(const item of filtered){
   const b=el('button','cv-item'+(item.localId===state.id?' selected':'')+(item.trashedAt?' is-trash':''));
@@ -27,10 +29,10 @@ function renderList(){
   b.append(top);
   const sub=[item.company,item.role].filter(Boolean).join(' · ');
   if(sub)b.append(el('div','item-company',sub));
-  b.append(el('small','',`${item.visible} voci visibili · ${niceDate(item.updatedAt)}`));
+  b.append(el('small','',`${item.visible} ${t('voci visibili')} · ${niceDate(item.updatedAt)}`));
   b.onclick=()=>guarded(()=>select(item.localId));nav.append(b);
  }
- if(!filtered.length)nav.append(el('p','muted',state.filter==='trash'?'Il cestino è vuoto.':'Nessun risultato. Importa un JSON o cambia ricerca.'));
+ if(!filtered.length)nav.append(el('p','muted',t(state.filter==='trash'?'Il cestino è vuoto.':'Nessun risultato. Importa un JSON o cambia ricerca.')));
 }
 async function select(id){
  resetSyncReview();state.id=id;const result=await api(`/api/cvs/${id}`);state.document=result;
@@ -40,7 +42,7 @@ async function select(id){
 function renderHead(){
  const {item, resume:cv}=state.document;set($('cvTitle'),document.createTextNode(item.name));
  $('cvCompany').textContent=[item.company,item.role].filter(Boolean).join('  ·  ');$('cvCompany').hidden=!item.company&&!item.role;
- $('cvSummary').textContent=`${Object.keys(cv.content).length} sezioni  ·  ${countsLocal(cv).visible} visibili  ·  ${countsLocal(cv).hidden} nascoste  ·  Aggiornato ${niceDate(item.updatedAt)}`;
+ $('cvSummary').textContent=`${Object.keys(cv.content).length} ${t('sezioni')}  ·  ${countsLocal(cv).visible} ${t('visibili')}  ·  ${countsLocal(cv).hidden} ${t('nascoste')}  ·  ${t('Aggiornato')} ${niceDate(item.updatedAt)}`;
  $('notesBar').textContent=item.notes||'';$('notesBar').hidden=!item.notes;
  $('trashBanner').hidden=!item.trashedAt;
  $('trashBtn').hidden=!!item.trashedAt;$('unarchiveBtn').hidden=!item.archived||!!item.trashedAt;$('recoverBtn').hidden=!item.trashedAt;$('deleteForeverBtn').hidden=!item.trashedAt;
@@ -48,17 +50,17 @@ function renderHead(){
 }
 function countsLocal(cv){let visible=0,hidden=0;for(const s of Object.values(cv.content||{}))for(const e of s.entries||[])e.isHidden?hidden++:visible++;return {visible,hidden};}
 function switchTab(tab){state.tab=tab;for(const b of document.querySelectorAll('.tabbar button'))b.classList.toggle('active',b.dataset.tab===tab);for(const t of ['sections','personal','advanced','history'])$(t+'Tab').hidden=t!==tab;if(tab==='sections')renderSections();if(tab==='personal')renderPersonal();if(tab==='advanced')$('jsonEditor').value=JSON.stringify(state.document.resume,null,2);if(tab==='history')guarded(renderHistory);}
-function renderSections(){const content=state.document.resume.content, keys=Object.keys(content),aside=$('sections');aside.replaceChildren();for(const key of keys){const s=content[key],vis=s.entries.filter(e=>!e.isHidden).length;const b=el('button',key===state.sectionKey?'active':'');b.append(el('span','',s.displayName||key),el('small','',`${vis}/${s.entries.length} visibili`));b.onclick=()=>{state.sectionKey=key;state.entryId=null;renderSections()};aside.append(b);}renderEntries();}
-function labelEntry(e){return e.title||e.skill||e.jobTitle||e.degree||e.language||e.employer||(e.text?clean(e.text).slice(0,100):'Voce senza titolo');}
+function renderSections(){const content=state.document.resume.content, keys=Object.keys(content),aside=$('sections');aside.replaceChildren();for(const key of keys){const s=content[key],vis=s.entries.filter(e=>!e.isHidden).length;const b=el('button',key===state.sectionKey?'active':'');b.append(el('span','',s.displayName||key),el('small','',`${vis}/${s.entries.length} ${t('visibili')}`));b.onclick=()=>{state.sectionKey=key;state.entryId=null;renderSections()};aside.append(b);}renderEntries();}
+function labelEntry(e){return e.title||e.skill||e.jobTitle||e.degree||e.language||e.employer||(e.text?clean(e.text).slice(0,100):t('Voce senza titolo'));}
 function renderEntries(){const key=state.sectionKey,sec=state.document.resume.content[key],head=$('sectionHead');if(!sec)return;
-head.replaceChildren();const box=el('div');box.append(el('h2','',sec.displayName||key),el('span','muted',`${sec.entries.length} voci · ${sec.sectionType||key}`));const actions=el('div','rowgap');const rename=el('button','','Rinomina sezione');rename.onclick=()=>guarded(async()=>{const name=await ask('Nome sezione','Nome visualizzato',sec.displayName||key);if(name===null)return;await api(`/api/cvs/${state.id}/section`,'PATCH',{sectionKey:key,displayName:name});await refresh();notice('Nome sezione aggiornato')});const add=el('button','','+ Nuova voce');add.onclick=()=>guarded(async()=>{await api(`/api/cvs/${state.id}/entry/new`,'POST',{sectionKey:key});await refresh();notice('Nuova voce aggiunta')});actions.append(rename,add);head.append(box,actions);
-const list=$('entries');list.replaceChildren();for(const entry of sec.entries){const b=el('button',`entryitem${entry.id===state.entryId?' chosen':''}${entry.isHidden?' is-hidden':''}`);b.append(el('span','visibility'+(entry.isHidden?' hidden':''),entry.isHidden?'◌':'●'));const summary=el('span');summary.append(el('strong','',labelEntry(entry)),el('small','',clean(entry.description||entry.infoHtml||entry.text||entry.subTitle||'').slice(0,140)));b.append(summary,el('span','pill'+(entry.isHidden?' hidden':''),entry.isHidden?'Nascosto':'Visibile'));b.onclick=()=>{state.entryId=entry.id;renderEntries()};list.append(b);}renderEditor();}
-function editLabel(k){return ({jobTitle:'Ruolo / titolo',employer:'Datore di lavoro',title:'Titolo',subTitle:'Sottotitolo',startDateNew:'Data inizio',endDateNew:'Data fine',infoHtml:'Descrizione (HTML FlowCV)',description:'Descrizione (HTML FlowCV)',text:'Testo profilo (HTML FlowCV)',skill:'Competenza',language:'Lingua',school:'Università / ente',degree:'Titolo di studio',titleLink:'URL',level:'Livello'}[k]||k);}
-function field(name,value,large=false){const wrap=el('div','field'+(large?' full':'')),label=el('label','',editLabel(name));const input=el(large?'textarea':'input');input.name=name;input.value=value;wrap.append(label,input);if(large)wrap.append(el('div','htmlhint','Il contenuto originale usa HTML: mantieni i tag se vuoi conservarne la formattazione.'));return wrap;}
-function renderEditor(){const area=$('entryEditor');area.replaceChildren();const sec=state.document.resume.content[state.sectionKey],entry=sec.entries.find(e=>e.id===state.entryId);if(!entry){area.append(el('p','muted','Seleziona una voce per modificarla. Puoi scegliere anche le voci nascoste.'));return;}
-const form=el('form');form.append(el('h3','','Modifica voce'));const grid=el('div','formgrid');const editable=Object.entries(entry).filter(([k,v])=>!['id','createdAt','updatedAt'].includes(k)&&typeof v==='string');for(const [k,v] of editable)grid.append(field(k,v,['description','text','infoHtml'].includes(k)||v.length>200));const show=el('div','field full');const lbl=el('label');const chk=el('input');chk.type='checkbox';chk.checked=!entry.isHidden;chk.style.width='auto';lbl.append(chk,document.createTextNode(' Mostra questa voce nel CV'));show.append(lbl);grid.append(show);const bottom=el('div','formfooter');const save=el('button','primary','Salva modifiche locali');save.type='submit';bottom.append(save);grid.append(bottom);form.append(grid);form.onsubmit=ev=>{ev.preventDefault();guarded(async()=>{const obj={isHidden:!chk.checked};for(const i of form.querySelectorAll('[name]'))obj[i.name]=i.value;await api(`/api/cvs/${state.id}/entry/${encodeURIComponent(state.sectionKey)}/${entry.id}`,'PATCH',{fields:obj});await refresh();state.entryId=entry.id;renderEntries();notice('Modifiche salvate. Snapshot precedente conservato.')})};area.append(form);}
-function renderPersonal(){const cv=state.document.resume,form=$('personalForm');form.replaceChildren();for(const [k,v] of Object.entries(cv.personalDetails)){if(typeof v!=='string')continue;if(!v&&!['jobTitle','fullName','displayEmail','phone','address','website','github','availability'].includes(k))continue;form.append(field(k,v,v.length>200));}const b=el('button','primary','Salva dati personali');b.type='submit';const f=el('div','formfooter');f.append(b);form.append(f);form.onsubmit=e=>{e.preventDefault();guarded(async()=>{const fields={};for(const x of form.querySelectorAll('[name]'))fields[x.name]=x.value;await api(`/api/cvs/${state.id}/personal`,'PATCH',{fields});await refresh();notice('Dati personali salvati localmente')})};}
-async function renderHistory(){const names=await api(`/api/cvs/${state.id}/history`);const holder=$('historyItems');holder.replaceChildren();if(!names.length){holder.append(el('p','muted','Ancora nessuna modifica: il backup importato è intatto.'));return;}for(const filename of names){const r=el('div','historyrow');r.append(el('span','',filename));const b=el('button','','Recupera come nuovo CV');b.onclick=()=>guarded(async()=>{const result=await api(`/api/cvs/${state.id}/history/recover`,'POST',{filename});notice('Snapshot recuperato come nuovo CV');await load();await select(result.localId)});r.append(b);holder.append(r);}}
+head.replaceChildren();const box=el('div');box.append(el('h2','',sec.displayName||key),el('span','muted',`${sec.entries.length} ${t('voci')} · ${sec.sectionType||key}`));const actions=el('div','rowgap');const rename=el('button','',t('Rinomina sezione'));rename.onclick=()=>guarded(async()=>{const name=await ask('Nome sezione','Nome visualizzato',sec.displayName||key);if(name===null)return;await api(`/api/cvs/${state.id}/section`,'PATCH',{sectionKey:key,displayName:name});await refresh();notice('Nome sezione aggiornato')});const add=el('button','',t('+ Nuova voce'));add.onclick=()=>guarded(async()=>{await api(`/api/cvs/${state.id}/entry/new`,'POST',{sectionKey:key});await refresh();notice('Nuova voce aggiunta')});actions.append(rename,add);head.append(box,actions);
+const list=$('entries');list.replaceChildren();for(const entry of sec.entries){const b=el('button',`entryitem${entry.id===state.entryId?' chosen':''}${entry.isHidden?' is-hidden':''}`);b.append(el('span','visibility'+(entry.isHidden?' hidden':''),entry.isHidden?'◌':'●'));const summary=el('span');summary.append(el('strong','',labelEntry(entry)),el('small','',clean(entry.description||entry.infoHtml||entry.text||entry.subTitle||'').slice(0,140)));b.append(summary,el('span','pill'+(entry.isHidden?' hidden':''),t(entry.isHidden?'Nascosto':'Visibile')));b.onclick=()=>{state.entryId=entry.id;renderEntries()};list.append(b);}renderEditor();}
+function editLabel(k){return t(({jobTitle:'Ruolo / titolo',employer:'Datore di lavoro',title:'Titolo',subTitle:'Sottotitolo',startDateNew:'Data inizio',endDateNew:'Data fine',infoHtml:'Descrizione (HTML FlowCV)',description:'Descrizione (HTML FlowCV)',text:'Testo profilo (HTML FlowCV)',skill:'Competenza',language:'Lingua',school:'Università / ente',degree:'Titolo di studio',titleLink:'URL',level:'Livello'}[k]||k));}
+function field(name,value,large=false){const wrap=el('div','field'+(large?' full':'')),label=el('label','',editLabel(name));const input=el(large?'textarea':'input');input.name=name;input.value=value;wrap.append(label,input);if(large)wrap.append(el('div','htmlhint',t('Il contenuto originale usa HTML: mantieni i tag se vuoi conservarne la formattazione.')));return wrap;}
+function renderEditor(){const area=$('entryEditor');area.replaceChildren();const sec=state.document.resume.content[state.sectionKey],entry=sec.entries.find(e=>e.id===state.entryId);if(!entry){area.append(el('p','muted',t('Seleziona una voce per modificarla. Puoi scegliere anche le voci nascoste.')));return;}
+const form=el('form');form.append(el('h3','',t('Modifica voce')));const grid=el('div','formgrid');const editable=Object.entries(entry).filter(([k,v])=>!['id','createdAt','updatedAt'].includes(k)&&typeof v==='string');for(const [k,v] of editable)grid.append(field(k,v,['description','text','infoHtml'].includes(k)||v.length>200));const show=el('div','field full');const lbl=el('label');const chk=el('input');chk.type='checkbox';chk.checked=!entry.isHidden;chk.style.width='auto';lbl.append(chk,document.createTextNode(t(' Mostra questa voce nel CV')));show.append(lbl);grid.append(show);const bottom=el('div','formfooter');const save=el('button','primary',t('Salva modifiche locali'));save.type='submit';bottom.append(save);grid.append(bottom);form.append(grid);form.onsubmit=ev=>{ev.preventDefault();guarded(async()=>{const obj={isHidden:!chk.checked};for(const i of form.querySelectorAll('[name]'))obj[i.name]=i.value;await api(`/api/cvs/${state.id}/entry/${encodeURIComponent(state.sectionKey)}/${entry.id}`,'PATCH',{fields:obj});await refresh();state.entryId=entry.id;renderEntries();notice('Modifiche salvate. Snapshot precedente conservato.')})};area.append(form);}
+function renderPersonal(){const cv=state.document.resume,form=$('personalForm');form.replaceChildren();for(const [k,v] of Object.entries(cv.personalDetails)){if(typeof v!=='string')continue;if(!v&&!['jobTitle','fullName','displayEmail','phone','address','website','github','availability'].includes(k))continue;form.append(field(k,v,v.length>200));}const b=el('button','primary',t('Salva dati personali'));b.type='submit';const f=el('div','formfooter');f.append(b);form.append(f);form.onsubmit=e=>{e.preventDefault();guarded(async()=>{const fields={};for(const x of form.querySelectorAll('[name]'))fields[x.name]=x.value;await api(`/api/cvs/${state.id}/personal`,'PATCH',{fields});await refresh();notice('Dati personali salvati localmente')})};}
+async function renderHistory(){const names=await api(`/api/cvs/${state.id}/history`);const holder=$('historyItems');holder.replaceChildren();if(!names.length){holder.append(el('p','muted',t('Ancora nessuna modifica: il backup importato è intatto.')));return;}for(const filename of names){const r=el('div','historyrow');r.append(el('span','',filename));const b=el('button','',t('Recupera come nuovo CV'));b.onclick=()=>guarded(async()=>{const result=await api(`/api/cvs/${state.id}/history/recover`,'POST',{filename});notice('Snapshot recuperato come nuovo CV');await load();await select(result.localId)});r.append(b);holder.append(r);}}
 async function refresh(){const id=state.id;state.items=await api('/api/cvs');state.document=await api(`/api/cvs/${id}`);renderList();renderHead();}
 
 // ——— Simple library controls ———
@@ -73,23 +75,23 @@ function closeMenu(){$('moreMenu').open=false;}
 async function refreshSession(){
  const result=await api('/api/session');remoteState.session=result;
  $('authDot').className='status-dot'+(result.valid?' ready':result.connected?' expired':'');
- $('authStatus').textContent=result.valid?result.email:result.connected?'Sessione scaduta':'Non collegato';
+ $('authStatus').textContent=result.valid?result.email:t(result.connected?'Sessione scaduta':'Non collegato');
  if(result.valid){await refreshRemote();}
- else{remoteState.resumeId='';$('remoteResumeSelect').replaceChildren(new Option('Collega un account',''));}
+ else{remoteState.resumeId='';$('remoteResumeSelect').replaceChildren(new Option(t('Collega un account'),''));}
  updateRemoteButtons();return result;
 }
 async function refreshRemote(){
  if(!remoteState.session?.valid)return;
  const current=remoteState.resumeId,items=await api('/api/session/resumes');
  const list=$('remoteResumeSelect');list.replaceChildren();
- for(const cv of items)list.add(new Option(`${cv.title||'Curriculum'}${cv.webResumeLive?' · pubblicato':''}`,cv.id));
+ for(const cv of items)list.add(new Option(`${cv.title||(i18n.language==='en'?'Resume':'Curriculum')}${cv.webResumeLive?t(' · pubblicato'):''}`,cv.id));
  remoteState.resumeId=items.some(x=>x.id===current)?current:(items[0]?.id||'');
  list.value=remoteState.resumeId;updateRemoteButtons();
 }
 async function connectWith(endpoint,payload={}){
  try{await api(endpoint,'POST',payload)}catch(e){
-  if(!e.message.includes('È già collegato'))throw e;
-  const yes=await confirmAction('Cambiare account?',`${e.message}\nSostituire l’account collegato in questo programma?`,'Sì, cambia account');
+  if(!e.message.includes('È già collegato')&&!e.message.includes('Already connected'))throw e;
+  const yes=await confirmAction('Cambiare account?',`${i18n.dynamicError(e.message)}\n${t('Sostituire l’account collegato in questo programma?')}`,'Sì, cambia account');
   if(!yes)return;
   await api(endpoint,'POST',{...payload,confirmSwitch:'CAMBIA ACCOUNT'});
  }
@@ -112,7 +114,7 @@ $('filterCV').onchange=e=>{state.filter=e.target.value;renderList()};
 $('reload').onclick=()=>guarded(async()=>{await load();await refreshSession();notice('Archivio aggiornato')});
 function metadata(title,values={}){
  return new Promise(resolve=>{
-  const d=$('metaDialog'),form=$('metaForm');$('metaTitle').textContent=title;
+  const d=$('metaDialog'),form=$('metaForm');$('metaTitle').textContent=t(title);
   $('metaName').value=values.name||'';$('metaCompany').value=values.company||'';
   $('metaRole').value=values.role||'';$('metaNotes').value=values.notes||'';
   d.showModal();$('metaName').focus();$('metaName').select();
@@ -127,11 +129,11 @@ function metadata(title,values={}){
 }
 function confirmAction(title,message,label='Sì, continua',details='',danger=false){
  return new Promise(resolve=>{
-  const d=$('confirmDialog');$('confirmTitle').textContent=title;
-  $('confirmText').textContent=message;$('confirmYes').textContent=label;
+  const d=$('confirmDialog');$('confirmTitle').textContent=t(title);
+  $('confirmText').textContent=t(message);$('confirmYes').textContent=t(label);
   $('confirmYes').className='btn '+(danger?'btn-danger':'btn-primary');
   $('confirmIcon').textContent=danger?'!':'↥';
-  $('confirmDetails').textContent=details;$('confirmDetails').hidden=!details;
+  $('confirmDetails').textContent=t(details);$('confirmDetails').hidden=!details;
   d.showModal();d.addEventListener('close',function done(){d.removeEventListener('close',done);resolve(d.returnValue==='ok')},{once:true});
  });
 }
@@ -155,7 +157,7 @@ $('editMetaBtn').onclick=()=>guarded(async()=>{
 });
 $('duplicateBtn').onclick=()=>guarded(async()=>{
  closeMenu();const cur=state.document.item;
- const meta=await metadata('Duplica curriculum',{name:cur.name+' — copia',company:cur.company,role:cur.role,notes:cur.notes});if(!meta)return;
+ const meta=await metadata('Duplica curriculum',{name:cur.name+t(' — copia'),company:cur.company,role:cur.role,notes:cur.notes});if(!meta)return;
  const item=await api('/api/cvs','POST',{sourceId:state.id,...meta});await load();await select(item.localId);
  notice('Copia indipendente creata.');
 });
@@ -174,14 +176,14 @@ $('recoverBtn').onclick=()=>guarded(async()=>{closeMenu();
  state.filter='active';$('filterCV').value='active';await load();notice('Curriculum recuperato.');
 });
 $('deleteForeverBtn').onclick=()=>guarded(async()=>{closeMenu();const id=state.id;
- const yes=await confirmAction('Eliminare definitivamente?',`«${state.document.item.name}» verrà cancellato dall’archivio locale. Questa operazione non è reversibile.`, 'Sì, elimina', '',true);
+ const yes=await confirmAction('Eliminare definitivamente?',i18n.language==='en'?`“${state.document.item.name}” will be permanently deleted from the local library. This cannot be undone.`:`«${state.document.item.name}» verrà cancellato dall’archivio locale. Questa operazione non è reversibile.`, 'Sì, elimina', '',true);
  if(!yes)return;
  await api(`/api/cvs/${id}`,'DELETE',{confirm:true});state.id=null;await load();notice('Curriculum eliminato definitivamente.');
 });
 async function saveFromOnline(){
  if(!remoteState.resumeId)throw Error('Nessun curriculum FlowCV collegato.');
- const selected=$('remoteResumeSelect').selectedOptions[0]?.textContent||'Curriculum FlowCV';
- const meta=await metadata('Salva versione da FlowCV',{name:`${selected.replace(' · pubblicato','')} — ${new Date().toLocaleDateString('it-IT')}`});
+ const selected=$('remoteResumeSelect').selectedOptions[0]?.textContent||(i18n.language==='en'?'FlowCV resume':'Curriculum FlowCV');
+ const meta=await metadata('Salva versione da FlowCV',{name:`${selected.replace(t(' · pubblicato'),'')} — ${new Date().toLocaleDateString(locale())}`});
  if(!meta)return;
  const item=await api('/api/session/pull','POST',{resumeId:remoteState.resumeId,...meta});
  state.filter='active';$('filterCV').value='active';state.query='';$('searchCV').value='';
@@ -194,7 +196,7 @@ async function restore(){
  if(item.trashedAt)throw Error('Recupera prima il CV dal Cestino.');
  remoteState.busy=true;updateRemoteButtons();
  const action=$('mainRestore'),label=action.textContent;
- action.textContent='Pubblicazione e download…';
+ action.textContent=t('Pubblicazione e download…');
  try{
   // One deliberate click authorizes replace + public web publish + PDF export.
   const response=await fetch('/api/session/use-and-download',{
@@ -235,5 +237,14 @@ for(const b of document.querySelectorAll('.tabbar button'))b.onclick=()=>switchT
 async function boot(){try{
  const status=await api('/api/status');state.token=status.token;await load();
  await refreshSession();if(!remoteState.session?.valid)$('accountDetails').open=true;
-}catch(e){notice('Avvio: '+e.message,true)}}
+}catch(e){notice(t('Avvio: ')+errText(e),true)}}
 boot();
+
+window.addEventListener('flowcv-language-change',()=>{
+ renderList();if(state.document){renderHead();switchTab(state.tab);}
+ if(remoteState.session){
+  $('authStatus').textContent=remoteState.session.valid?remoteState.session.email:t(remoteState.session.connected?'Sessione scaduta':'Non collegato');
+  if(remoteState.session.valid)guarded(refreshRemote);
+  else $('remoteResumeSelect').replaceChildren(new Option(t('Collega un account'),''));
+ }
+});

@@ -1,5 +1,5 @@
 #define AppName "FlowCV Manager"
-#define Version "0.6.2"
+#define Version "0.6.3"
 [Setup]
 AppId={{A727F06A-34EA-41E7-9570-921C48C50A43}
 AppName={#AppName}
@@ -16,6 +16,16 @@ SetupIconFile=..\FlowCV-Local-Manager\FlowCV-Manager.ico
 UninstallDisplayIcon={app}\FlowCV-Manager.ico
 WizardStyle=modern
 ArchitecturesAllowed=x64compatible
+[Languages]
+Name: "en"; MessagesFile: "compiler:Default.isl"
+Name: "it"; MessagesFile: "compiler:Languages\Italian.isl"
+[CustomMessages]
+en.DesktopShortcut=Create a desktop shortcut
+it.DesktopShortcut=Crea un collegamento sul desktop
+en.ShortcutGroup=Shortcuts
+it.ShortcutGroup=Collegamenti
+en.LaunchManager=Launch FlowCV Manager
+it.LaunchManager=Avvia FlowCV Manager
 [Files]
 Source: "runtime\node.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "runtime\NODE-LICENSE.txt"; DestDir: "{app}\licenses"; Flags: ignoreversion
@@ -32,10 +42,10 @@ Source: "..\FlowCV-Local-Manager\README.md"; DestDir: "{app}"; Flags: ignorevers
 Name: "{autoprograms}\FlowCV Manager"; Filename: "{sys}\wscript.exe"; Parameters: "//nologo ""{app}\FlowCV-Manager.vbs"""; WorkingDir: "{app}"; IconFilename: "{app}\FlowCV-Manager.ico"
 Name: "{autodesktop}\FlowCV Manager"; Filename: "{sys}\wscript.exe"; Parameters: "//nologo ""{app}\FlowCV-Manager.vbs"""; WorkingDir: "{app}"; IconFilename: "{app}\FlowCV-Manager.ico"; Tasks: desktopicon
 [Tasks]
-Name: "desktopicon"; Description: "Crea icona sul desktop"; GroupDescription: "Collegamenti:"; Flags: checkedonce
+Name: "desktopicon"; Description: "{cm:DesktopShortcut}"; GroupDescription: "{cm:ShortcutGroup}:"; Flags: checkedonce
 [Run]
 Filename: "{app}\node.exe"; Parameters: """{app}\launcher.mjs"" --stop"; Flags: runhidden waituntilterminated
-Filename: "{sys}\wscript.exe"; Parameters: "//nologo ""{app}\FlowCV-Manager.vbs"""; Description: "Avvia FlowCV Manager"; Flags: nowait postinstall skipifsilent
+Filename: "{sys}\wscript.exe"; Parameters: "//nologo ""{app}\FlowCV-Manager.vbs"""; Description: "{cm:LaunchManager}"; Flags: nowait postinstall skipifsilent
 [UninstallRun]
 Filename: "{app}\node.exe"; Parameters: """{app}\launcher.mjs"" --stop"; Flags: runhidden waituntilterminated
 [UninstallDelete]
