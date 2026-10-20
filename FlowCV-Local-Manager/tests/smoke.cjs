@@ -1,0 +1,42 @@
+const {spawn}=require('node:child_process');
+const fs=require('node:fs'),os=require('node:os'),path=require('node:path'),assert=require('node:assert/strict');
+(async()=>{
+ const data=fs.mkdtempSync(path.join(os.tmpdir(),'flowcv-v04-http-')),port=18765+Math.floor(Math.random()*1500);
+ const child=spawn(process.execPath,[path.join(__dirname,'..','server.mjs')],{env:{...process.env,FLOWCV_MANAGER_DATA_DIR:data,FLOWCV_MANAGER_PORT:String(port)},stdio:'pipe'});
+ try{
+  const base=`http://127.0.0.1:${port}`;
+  let ready=false;for(let i=0;i<80;i++){try{const r=await fetch(`${base}/api/status`);if(r.ok){ready=true;break}}catch{}await new Promise(r=>setTimeout(r,100))}assert(ready,'Server ready');
+  const stat=await (await fetch(base+'/api/status')).json();assert(stat.token);
+  const headers={'content-type':'application/json','x-flowcv-manager-token':stat.token};
+  const request=async(method,url,body)=>fetch(base+url,{method,headers,body:JSON.stringify(body)});
+  let resp=await fetch(base+'/api/session');assert.deepEqual(await resp.json(),{connected:false,valid:false});
+  resp=await request('POST','/api/session/from-cli',{});assert.equal(resp.status,404);
+  resp=await request('POST','/api/session/pdf',{resumeId:'5b8b6ad2-41cf-4f2d-940b-6d71c33aac63'});assert.equal(resp.status,401);
+  const cv={id:'d0000000-0000-4000-8000-000000000001',title:'Test',content:{work:{displayName:'Esperienza',entries:[{id:'b268b34f-20e0-4a46-9861-cd69a6e56049',jobTitle:'Engineer',isHidden:false}]}},personalDetails:{fullName:'Utente',photo:{}},customization:{font:{selected:'sans'},lastUsedTemplateId:'template'},lng:'it'};
+  resp=await request('POST','/api/import',{resume:cv,name:'CV per Coloplast',company:'Coloplast',role:'Biomedical Engineer',notes:'Versione adattata'});
+  assert.equal(resp.status,201);const item=await resp.json();
+  assert(item?.localId);
+  resp=await fetch(base+'/api/cvs');let items=await resp.json();assert.equal(items.length,1);assert.equal(items[0].company,'Coloplast');
+  resp=await request('PATCH',`/api/cvs/${item.localId}/metadata`,{name:'Coloplast 2026',company:'Coloplast A/S',role:'R&D',notes:'Per il recruiter'});
+  assert.equal(resp.status,200);let meta=await resp.json();assert.equal(meta.name,'Coloplast 2026');assert.equal(meta.company,'Coloplast A/S');
+  resp=await request('POST','/api/cvs',{sourceId:item.localId,name:'Seconda versione',company:'Made',role:'Software Engineer',notes:''});
+  assert.equal(resp.status,201);const clone=await resp.json();assert.equal(clone.company,'Made');assert.notEqual(item.localId,clone.localId);
+  resp=await request('PATCH',`/api/cvs/${item.localId}/trash`,{trashed:true});assert.equal(resp.status,200);assert((await resp.json()).trashedAt);
+  resp=await fetch(base+'/api/cvs');items=await resp.json();assert.equal(items.length,2);assert(items.find(x=>x.localId===item.localId).trashedAt);
+  resp=await request('DELETE',`/api/cvs/${clone.localId}`,{confirm:true});assert.equal(resp.status,409,'Cannot delete without trashing');
+  resp=await request('PATCH',`/api/cvs/${item.localId}/trash`,{trashed:false});assert.equal(resp.status,200);assert.equal((await resp.json()).trashedAt,null);
+  resp=await request('PATCH',`/api/cvs/${item.localId}/entry/work/b268b34f-20e0-4a46-9861-cd69a6e56049`,{fields:{jobTitle:'Developer'}});assert.equal(resp.status,200);
+  resp=await fetch(base+`/api/cvs/${item.localId}/history`);assert.equal((await resp.json()).length,1);
+  resp=await request('PATCH',`/api/cvs/${clone.localId}/trash`,{trashed:true});assert.equal(resp.status,200);
+  resp=await request('DELETE',`/api/cvs/${clone.localId}`,{confirm:true});assert.equal(resp.status,200);assert((await resp.json()).deleted);
+  resp=await fetch(base+'/api/cvs');assert.equal((await resp.json()).length,1);
+  resp=await fetch(base+'/api/import',{method:'POST',headers:{'content-type':'application/json'},body:'{}'});assert.equal(resp.status,403);
+  resp=await fetch(base+'/');const html=await resp.text();assert(!html.includes('id="downloadPdf"'));assert(html.includes('Pubblica e scarica PDF'));assert(html.includes('metaCompany'));assert(!html.includes('PDF locale'));assert(!html.includes('remotePdf'));assert(!html.includes('Pubblicato'));assert(html.includes('Elimina definitivamente'));assert(html.includes('id="cookieInput" type="text" class="secret-input"'));assert(!html.includes('type="password"'));resp=await fetch(base+'/style.css');assert((await resp.text()).includes('-webkit-text-security:disc'));
+  resp=await fetch(base+'/app.js');const js=await resp.text();assert(js.includes('/api/session/use-and-download'));assert(!js.includes('confirmAction(\'Ripristinare su FlowCV?'));assert(js.includes('restore()'));assert(!js.includes('Il CV attualmente online verrà salvato automaticamente'));assert(!js.includes("prompt(`Stai per sostituire"));
+  resp=await fetch(base+'/bridge.mjs');assert.equal(resp.status,404);
+  resp=await fetch(base+'/favicon.svg');assert.equal(resp.status,200);assert((await resp.text()).includes('<svg'));
+  resp=await fetch(base+'/');const newUI=await resp.text();assert(newUI.includes('flowcvWebsite'));assert(newUI.includes('FlowCV Manager'));
+  resp=await request('POST','/api/open-flowcv',{});if(process.platform!=='win32')assert.equal(resp.status,501);
+  console.log('PASS: startup, search UI, metadata, clone, trash, recovery, permanent delete, history, token protection, FlowCV restore workflow');
+ }finally{child.kill();fs.rmSync(data,{recursive:true,force:true})}
+})().catch(e=>{console.error(e);process.exitCode=1});

@@ -1,0 +1,14 @@
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+const root=new URL('../',import.meta.url);
+const app=readFileSync(new URL('app.js',root),'utf8');
+const bridge=readFileSync(new URL('bridge.mjs',root),'utf8');
+const server=readFileSync(new URL('server.mjs',root),'utf8');
+const page=readFileSync(new URL('index.html',root),'utf8');
+assert.match(app,/\$\('loginEdge'\)\.onclick=[\s\S]*?api\('\/api\/open-flowcv'/);
+assert.match(server,/Start-Process -FilePath 'msedge.exe'/);
+assert.match(page,/Sessione FlowCV/);
+assert.ok(!bridge.includes('getFlowCVSessionFromBrowser'));
+assert.ok(!bridge.includes('/api/session/browser-login'));
+assert.ok(!app.includes('/api/session/browser-login'));
+console.log('PASS: Edge login uses normal browser and manual secure session transfer');

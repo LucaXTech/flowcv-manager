@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="it">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#112d47"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><title>FlowCV Manager</title><link rel="stylesheet" href="/style.css"></head>
+<body>
+<header class="topbar">
+ <div class="brand"><span class="brand-mark">F<span>.</span></span><div><strong>FlowCV Manager</strong><small>Il tuo archivio professionale</small></div></div>
+ <div class="top-actions"><span class="connection-pill" id="authPill"><span class="status-dot" id="authDot"></span><span id="authStatus">Verifica collegamento…</span></span><button class="btn btn-website" id="flowcvWebsite" title="Apri FlowCV nel browser predefinito per modificare il curriculum online">Apri FlowCV <span aria-hidden="true">↗</span></button></div>
+</header>
+<div class="layout">
+ <aside class="sidebar" aria-label="Libreria curriculum">
+  <div class="sidebar-heading"><div><span class="eyebrow">ARCHIVIO LOCALE</span><h2>Curriculum <span id="countCV" class="count"></span></h2></div><button class="btn btn-primary btn-icon" id="importBtn" title="Importa un CV JSON" aria-label="Importa JSON">+</button></div>
+  <label class="sr-only" for="searchCV">Cerca curriculum</label><input type="search" id="searchCV" class="search" placeholder="Cerca azienda, ruolo o CV…" autocomplete="off">
+  <div class="filter-row"><select id="filterCV" aria-label="Filtro archivio"><option value="active">Tutti i CV</option><option value="archived">Archiviati</option><option value="trash">Cestino</option></select><button id="reload" class="btn btn-icon btn-quiet" title="Aggiorna elenco" aria-label="Aggiorna elenco">↻</button></div>
+  <nav id="cvList" class="cv-list" aria-label="Curriculum salvati"></nav>
+  <div class="side-bottom">
+    <button class="btn btn-outline full" id="saveOnlineBtn">↓ Salva versione da FlowCV</button>
+    <details class="account-details" id="accountDetails"><summary>Connessione e impostazioni <span aria-hidden="true">⌄</span></summary>
+      <div class="account-body">
+       <p class="muted">Il Manager conserva la sessione cifrata finché resta valida. Se FlowCV ti disconnette, aggiornala qui.</p>
+       <button id="loginEdge" class="btn btn-primary full">↗ Apri FlowCV nel mio Edge</button>
+       <p class="muted">Accedi nel tuo Edge abituale (anche con Google), poi copia la sessione:</p>
+       <ol class="cookie-steps"><li>Premi <strong>F12</strong> su FlowCV.</li><li>Apri <strong>Application → Cookies → https://app.flowcv.com</strong>.</li><li>Seleziona <code>flowcvsidapp</code> e copia solo il suo <strong>Value</strong>.</li></ol>
+       <label for="cookieInput">Sessione FlowCV</label>
+       <input id="cookieInput" type="text" class="secret-input" spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="Cookie sessione FlowCV (valore nascosto)" placeholder="Incolla il valore copiato">
+       <button id="saveCookie" class="btn btn-outline full">Collega account</button>
+       <details class="manual-login"><summary>Alternativa: importa dalla CLI</summary>
+        <div class="manual-login-body">
+         <button id="importCli" class="btn btn-quiet full">Usa sessione CLI esistente</button>
+        </div>
+       </details>
+       <button id="refreshAuth" class="btn btn-quiet full">Verifica connessione</button>
+       <label for="remoteResumeSelect">CV online da sostituire</label>
+       <select id="remoteResumeSelect"><option value="">Nessun CV selezionato</option></select>
+      </div>
+    </details>
+    <div class="sidebar-footnote"><span class="local-dot"></span> Archivio sul tuo PC <span class="foot-sep">·</span> Un solo account FlowCV</div>
+  </div>
+ </aside>
+ <main class="main" id="main">
+   <div id="empty" class="empty-state"><div class="empty-symbol">▤</div><span class="eyebrow">LA TUA LIBRERIA PERSONALE</span><h1>Il CV giusto, sempre pronto.</h1><p>Salva una versione per ogni azienda, riaprila quando vuoi e pubblicala su FlowCV con un clic per scaricare il PDF originale.</p><div class="empty-actions"><button class="btn btn-primary" id="importEmpty">Importa un JSON</button><button class="btn btn-outline" id="saveOnlineEmpty">Salva da FlowCV</button></div></div>
+   <div id="workspace" hidden>
+     <div class="document-head">
+       <div class="document-identity"><span class="eyebrow"><span class="local-dot"></span> VERSIONE SALVATA SUL PC</span><h1 id="cvTitle"></h1><div id="cvCompany" class="company-line"></div><div id="cvSummary" class="subtext"></div></div>
+       <div class="document-actions">
+         <button id="editMetaBtn" class="btn btn-outline">Modifica scheda</button>
+         <button id="mainRestore" class="btn btn-primary btn-restore" title="Sostituisce il CV online, pubblica la pagina web e scarica il PDF originale. Nessuna conferma o backup automatico." disabled>↥ Pubblica e scarica PDF</button>
+         <details class="action-menu" id="moreMenu"><summary class="btn btn-outline" aria-label="Altre azioni">•••</summary><div class="menu-content">
+           <button id="duplicateBtn">Duplica</button><button id="exportBtn">Esporta JSON</button>
+           <button id="trashBtn" class="menu-danger">Sposta nel cestino</button>
+           <button id="unarchiveBtn" hidden>Recupera dall’archivio</button><button id="recoverBtn" hidden>Recupera dal cestino</button><button id="deleteForeverBtn" class="menu-danger" hidden>Elimina definitivamente</button>
+         </div></details>
+       </div>
+     </div>
+     <div id="notesBar" class="notes-bar" hidden></div>
+     <div id="trashBanner" class="trash-banner" hidden>Questa versione è nel Cestino. Puoi recuperarla dal menu •••.</div>
+     <nav class="tabbar" aria-label="Schede del curriculum"><button data-tab="sections" class="active">Contenuti</button><button data-tab="personal">Dati personali</button><button data-tab="advanced">JSON</button><button data-tab="history">Cronologia</button></nav>
+     <section class="pane" id="sectionsTab"><div class="section-list" id="sections"></div><div class="section-pane"><div class="section-head" id="sectionHead"></div><div class="entries" id="entries"></div><div id="entryEditor" class="editor"></div></div></section>
+     <section class="pane" id="personalTab" hidden><div class="widepanel"><h2>Dati personali</h2><p class="muted">Le modifiche qui restano locali finché non ripristini su FlowCV.</p><form id="personalForm" class="formgrid"></form></div></section>
+     <section class="pane" id="advancedTab" hidden><div class="widepanel"><h2>JSON completo</h2><p class="muted">Per modifiche avanzate. Una copia della versione precedente viene conservata in Cronologia.</p><textarea id="jsonEditor" spellcheck="false" class="jsontext" aria-label="Codice JSON completo"></textarea><div class="rowgap"><button class="btn btn-quiet" id="jsonReset">Annulla modifiche</button><button class="btn btn-primary" id="jsonSave">Salva JSON</button></div></div></section>
+     <section class="pane" id="historyTab" hidden><div class="widepanel"><h2>Cronologia</h2><p class="muted">Puoi recuperare le modifiche precedenti come versioni separate.</p><div id="historyItems"></div></div></section>
+   </div>
+ </main>
+</div>
+<input type="file" id="fileInput" accept="application/json,.json" hidden>
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+<dialog id="metaDialog" class="modal"><form method="dialog" id="metaForm"><div><span class="eyebrow">ARCHIVIO CV</span><h2 id="metaTitle">Nuova versione</h2></div><label for="metaName">Nome della versione <span class="required">*</span></label><input id="metaName" maxlength="120" required placeholder="Es. Biomedical R&D — Generale"><div class="two-fields"><div><label for="metaCompany">Azienda</label><input id="metaCompany" maxlength="100" placeholder="Es. Coloplast"></div><div><label for="metaRole">Posizione</label><input id="metaRole" maxlength="100" placeholder="Es. R&D Engineer"></div></div><label for="metaNotes">Note (facoltative)</label><textarea id="metaNotes" rows="3" maxlength="1000" placeholder="Perché ho preparato questa versione…"></textarea><menu><button class="btn btn-primary" value="ok">Salva</button><button class="btn btn-quiet" value="cancel" formnovalidate>Annulla</button></menu></form></dialog>
+<dialog id="confirmDialog" class="modal"><form method="dialog"><div class="confirm-icon" id="confirmIcon">↥</div><h2 id="confirmTitle">Conferma</h2><p id="confirmText" class="muted"></p><div id="confirmDetails" class="confirm-details" hidden></div><menu><button class="btn btn-outline" value="cancel" formnovalidate>Annulla</button><button id="confirmYes" class="btn btn-primary" value="ok">Sì, continua</button></menu></form></dialog>
+<script src="/app.js" defer></script>
+</body></html>

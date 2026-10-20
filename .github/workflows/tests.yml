@@ -1,0 +1,22 @@
+name: Tests
+on:
+  push:
+  pull_request:
+jobs:
+  test:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Check core tests
+        run: |
+          node FlowCV-Local-Manager/tests/installer-source.test.mjs
+          node FlowCV-Local-Manager/tests/normal-edge-login.test.mjs
+          node FlowCV-Local-Manager/tests/smoke.cjs
+          node FlowCV-Local-Manager/tests/bridge.test.mjs
+          node FlowCV-Local-Manager/tests/launcher.test.mjs

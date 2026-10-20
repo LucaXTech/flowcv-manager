@@ -1,0 +1,13 @@
+node_modules/
+.env
+.env.*
+*.log
+.DS_Store
+.DS_Store?
+CVs/
+account/
+registry.json
+session.dpapi
+*.cookie
+*.pem
+*.key

@@ -1,0 +1,35 @@
+name: Windows Installer
+on:
+  workflow_dispatch:
+  push:
+    tags: ['v*']
+jobs:
+  installer:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Include Node.js runtime in installer
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force 'installer/runtime' | Out-Null
+          $node = (Get-Command node.exe).Source
+          Copy-Item $node 'installer/runtime/node.exe'
+          $nodeLicense = Join-Path (Split-Path -Parent $node) 'LICENSE'
+          if (-not (Test-Path $nodeLicense)) { throw 'Node.js distribution LICENSE is missing' }
+          Copy-Item $nodeLicense 'installer/runtime/NODE-LICENSE.txt'
+          if (-not (Test-Path 'installer/runtime/node.exe')) { throw 'Node.js runtime missing' }
+      - name: Install Inno Setup
+        shell: pwsh
+        run: choco install innosetup -y --no-progress
+      - name: Compile setup
+        shell: pwsh
+        run: |
+          & "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" 'installer\FlowCV-Manager.iss'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: FlowCV-Manager-Windows-Installer
+          path: dist/FlowCV-Manager-Setup-*.exe
+          if-no-files-found: error

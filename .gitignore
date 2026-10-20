@@ -1,0 +1,27 @@
+node_modules/
+.env
+.env.*
+*.log
+CVs/
+account/
+session.dpapi
+registry.json
+Documents/
+cvs/
+history/
+dist/
+*.cookie
+*.pem
+*.key
+*.zip
+
+# Do not ever commit CV exports, personal documents or session snapshots.
+*.json
+*.pdf
+*.dpapi
+*.session
+*.sqlite
+*.db
+FlowCV-Local-Manager/data/
+installer/runtime/
+FlowCV-Local-Manager/AppWindow/
