@@ -11,6 +11,14 @@ FlowCV Manager is a **free, local Windows desktop companion for [FlowCV](https:/
 
 > **Independent, unofficial project.** Not affiliated with or endorsed by FlowCV. Uses undocumented web endpoints; changes to FlowCV can break compatibility. Your FlowCV plan's online-resume limit still applies: the application replaces the selected online resume, not the limit.
 
+## Screenshots
+
+### Resume library
+![FlowCV Manager - Local resume library](docs/screenshots/resume-library.png)
+
+### Local resume editor
+![FlowCV Manager - Editing work experience](docs/screenshots/resume-editor.png)
+
 ## Features
 
 - **Unlimited local resume versions** — name, company, role, notes, search and filter.
