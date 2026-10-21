@@ -1,5 +1,5 @@
 #define AppName "FlowCV Manager"
-#define Version "0.6.3"
+#define Version "0.6.3.1"
 [Setup]
 AppId={{A727F06A-34EA-41E7-9570-921C48C50A43}
 AppName={#AppName}

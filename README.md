@@ -25,7 +25,7 @@ FlowCV Manager is a **free, local Windows desktop companion for [FlowCV](https:/
 
 ### Standalone Windows installer (recommended)
 
-Open [Actions → Windows Installer](https://github.com/LucaXTech/flowcv-manager/actions/workflows/windows-installer.yml), choose the latest successful run and download the `FlowCV-Manager-Windows-Installer` artifact. Extract the ZIP and run `FlowCV-Manager-Setup-0.6.3.exe`.
+Open [Actions → Windows Installer](https://github.com/LucaXTech/flowcv-manager/actions/workflows/windows-installer.yml), choose the latest successful run and download the `FlowCV-Manager-Windows-Installer` artifact. Extract the ZIP and run `FlowCV-Manager-Setup-0.6.3.1.exe`.
 
 The installer bundles Node.js, needs no separate Node installation, installs for the current user without admin rights, and creates Desktop and Start Menu shortcuts. **A successful build is not the same as a Windows field test; review the release and test the installer before trusting it for important work.** The installer is not digitally signed.
 

@@ -1,3 +1,10 @@
+## v0.6.3.1 — Windows source-installer hotfix
+
+- Fix ZIP/`.cmd` installer omitting `i18n.js`. The missing script prevented the UI from initializing, which made saved resumes appear missing and EN/IT unresponsive.
+- Validate required static assets on server startup and fail with an explicit installation error instead of displaying an empty application.
+- Add regression coverage to ensure the source installer includes every JS/CSS/SVG referenced in `index.html`.
+- User resume data and encrypted session remain untouched.
+
 # Changelog
 
 ## v0.6.3 — Bilingual interface

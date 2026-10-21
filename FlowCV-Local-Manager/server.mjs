@@ -81,6 +81,10 @@ async function bodyJSON(req,max=1_500_000){
 function json(res,obj,status=200){res.writeHead(status,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store','X-Content-Type-Options':'nosniff'});res.end(JSON.stringify(obj));}
 function text(res,s,status=200,ct='text/plain; charset=utf-8'){res.writeHead(status,{'Content-Type':ct,'Cache-Control':'no-store','X-Content-Type-Options':'nosniff'});res.end(s);}
 function sendFile(res,file,ct){return fs.readFile(path.join(ROOT,file)).then(data=>{res.writeHead(200,{'Content-Type':ct,'Cache-Control':'no-store','X-Content-Type-Options':'nosniff','Content-Security-Policy':"default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; base-uri 'none'; frame-ancestors 'none'"});res.end(data)});}
+// Fail loudly if an installer omits a required UI asset. Never show an empty CV library as a side effect.
+for (const asset of ['index.html','app.js','i18n.js','style.css','favicon.svg']) {
+  if (!existsSync(path.join(ROOT,asset))) throw new Error(`Incomplete FlowCV Manager installation: missing ${asset}. Please reinstall.`);
+}
 await init();
 const bridge=createBridge({DATA,atomicWrite,addCV,cvOf,mutate,bodyJSON,json});
 const server=http.createServer(async(req,res)=>{

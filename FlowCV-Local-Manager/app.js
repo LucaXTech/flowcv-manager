@@ -217,7 +217,7 @@ async function restore(){
    notice('CV caricato e pubblicato. PDF originale scaricato.');
   }finally{link.remove();setTimeout(()=>URL.revokeObjectURL(url),120000)}
   await refreshRemote();
- }finally{action.textContent=label;remoteState.busy=false;updateRemoteButtons()}
+ }finally{action.textContent=t('↥ Pubblica e scarica PDF');remoteState.busy=false;updateRemoteButtons()}
 }
 $('flowcvWebsite').onclick=()=>guarded(async()=>{
  // A standalone Edge app uses a separate browser profile. Open the ORIGINAL
@@ -241,6 +241,7 @@ async function boot(){try{
 boot();
 
 window.addEventListener('flowcv-language-change',()=>{
+    if (!remoteState.busy) $('mainRestore').textContent=t('↥ Pubblica e scarica PDF');
  renderList();if(state.document){renderHead();switchTab(state.tab);}
  if(remoteState.session){
   $('authStatus').textContent=remoteState.session.valid?remoteState.session.email:t(remoteState.session.connected?'Sessione scaduta':'Non collegato');

@@ -22,7 +22,7 @@ try {
     }
     New-Item -ItemType Directory -Force -Path $destination | Out-Null
     # Explicit allowlist; never copy storage or secrets into installation.
-    $files = @('app.js','bridge.mjs','launcher.mjs','server.mjs','index.html','style.css',
+    $files = @('app.js','i18n.js','bridge.mjs','launcher.mjs','server.mjs','index.html','style.css',
         'favicon.svg','FlowCV-Manager.ico','FlowCV-Manager.vbs','Avvia-FlowCV.cmd','Arresta-FlowCV.cmd',
         'Crea-collegamento-desktop.vbs','README.md','CHANGELOG.md')
     foreach ($file in $files) {
