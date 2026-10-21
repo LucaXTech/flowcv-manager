@@ -11,6 +11,12 @@ FlowCV Manager is a **free, local Windows desktop companion for [FlowCV](https:/
 
 > **Independent, unofficial project.** Not affiliated with or endorsed by FlowCV. Uses undocumented web endpoints; changes to FlowCV can break compatibility. Your FlowCV plan's online-resume limit still applies: the application replaces the selected online resume, not the limit.
 
+## Download
+
+**[⬇ Download FlowCV Manager for Windows](https://github.com/LucaXTech/flowcv-manager/releases/latest)**
+
+Free and open source. No separate Node.js installation required.
+
 ## Screenshots
 
 ### Resume library
@@ -33,7 +39,7 @@ FlowCV Manager is a **free, local Windows desktop companion for [FlowCV](https:/
 
 ### Standalone Windows installer (recommended)
 
-Open [Actions → Windows Installer](https://github.com/LucaXTech/flowcv-manager/actions/workflows/windows-installer.yml), choose the latest successful run and download the `FlowCV-Manager-Windows-Installer` artifact. Extract the ZIP and run `FlowCV-Manager-Setup-0.6.3.1.exe`.
+Download the latest standalone Windows installer from [GitHub Releases](https://github.com/LucaXTech/flowcv-manager/releases/latest). Run the `FlowCV-Manager-Setup-*.exe` file.
 
 The installer bundles Node.js, needs no separate Node installation, installs for the current user without admin rights, and creates Desktop and Start Menu shortcuts. **A successful build is not the same as a Windows field test; review the release and test the installer before trusting it for important work.** The installer is not digitally signed.
 
@@ -70,3 +76,4 @@ The Manager serves its UI on `http://127.0.0.1:8765` (loopback only) and talks t
 Copyright © LucaXTech, **MIT** (see [`LICENSE`](LICENSE)).
 
 Inspired by [amirwebd3v/Flowcv-MCP](https://github.com/amirwebd3v/Flowcv-MCP), which is not bundled into this application. This project is **not affiliated with, supported by or endorsed by FlowCV**, or by the author of the upstream project.
+
